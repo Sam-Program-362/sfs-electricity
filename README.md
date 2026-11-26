@@ -36,6 +36,19 @@ Build this source using the [Unity UI workflow](SFS_MODDING_RESEARCH.md#8-exact-
 or the GitHub artifact workflow below. Source checks:
 `python3 -m unittest discover -s tests -v`.
 
+## Free experimental ion-only binary patch
+
+The original author-provided `Electricity_v1.0.1.pack` can now be patched with
+free Python tooling, **without Unity or Odin**. This changes the ion to thrust
+7.25 / ISP 1800 while preserving its nominal Power draw and Liquid Fuel
+requirement. All four rewritten bundles pass save/reload checks; **in-game
+verification is pending**. The separate electric RCS is **not** included in
+this binary-patching route yet. It is not an export of all source changes above.
+
+See **[FREE_PACK_PATCH.md](docs/FREE_PACK_PATCH.md)** for reproduction, validation,
+limitations, and safe phone-testing instructions. The self-hosted Unity workflow
+below is a separate route, not a requirement for this ion-only patch.
+
 ## Build a `.pack` GitHub artifact
 
 The **Build SFS pack** Actions workflow provides:
@@ -60,7 +73,11 @@ The workflow has been added in source; it has **not** yet run a real Unity build
 
 ## Installation
 
-**Note:** On mobile platforms you need to buy the full bundle to install mods!
+**Mobile compatibility note:** The author's original instructions state that
+mobile mods require the Full Bundle. However, the user reports the original
+v1.0.1 pack already works on their phone without that purchase. Check whether
+the original pack loads on your installation rather than assuming a purchase
+is necessary. The experimental patch does not modify the game or purchase checks.
 
 First, get the [latest version](https://github.com/VerdiX094/sfs-electricity/releases/latest) of the pack.
 After that's done, move the `.pack` file you've downloaded into:
@@ -75,7 +92,9 @@ After that's done, move the `.pack` file you've downloaded into:
 ## Troubleshooting
 
 ### The pack won't show up in the mod loader menu/build screen!
-  Read the instructions again. This type of an issue is very often caused by pasting the pack in the wrong folder or trying to install it without the full bundle purchase (if on mobile).
+  Check the folder and whether the original author-provided pack loads on your
+  game version. Avoid installing duplicate copies. Mobile loader/entitlement
+  requirements may differ; see the compatibility note above.
   
   Sometimes the issue can be resolved by [verifying the game files integrity](https://help.steampowered.com/en/faqs/view/0C48-FCBD-DA71-93EB) (if on Steam) or reinstalling the game.
 
