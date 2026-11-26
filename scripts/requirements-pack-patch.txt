@@ -1,0 +1,2 @@
+# Optional binary-patching tool only; not needed for ordinary offline source tests.
+UnityPy==1.22.5
