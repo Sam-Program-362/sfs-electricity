@@ -1750,7 +1750,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sources:
   - resourceType: {fileID: 11400000, guid: 04b436aa485ffa14cab70bc05a1ef5bf, type: 2}
-    flowPercent: 40
+    flowPercent: 8.275862
     sourceSearchMode: 0
     surface: {fileID: 0}
     flowType: 0
@@ -1787,7 +1787,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   thrust:
     variables: {fileID: 7566055751565209050}
-    input: 1.25
+    input: 7.25
   thrustNormal:
     variables: {fileID: 7566055751565209050}
     x:
@@ -1798,7 +1798,7 @@ MonoBehaviour:
       input: 1
   ISP:
     variables: {fileID: 7566055751565209050}
-    input: 1500
+    input: 1800
   thrustPosition:
     variables: {fileID: 7566055751565209050}
     x:
