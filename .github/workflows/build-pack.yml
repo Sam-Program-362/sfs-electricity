@@ -1,0 +1,101 @@
+name: Build SFS pack
+
+on:
+  push:
+    paths:
+      - 'Electricity/**'
+      - 'Electricity.meta'
+      - 'tests/**'
+      - 'scripts/ci/**'
+      - 'build-tools/**'
+      - '.github/workflows/build-pack.yml'
+  pull_request:
+    paths:
+      - 'Electricity/**'
+      - 'Electricity.meta'
+      - 'tests/**'
+      - 'scripts/ci/**'
+      - 'build-tools/**'
+      - '.github/workflows/build-pack.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sfs-pack-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Source and build-tool checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out selected revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Run source and tooling tests
+        run: python -m unittest discover -s tests -v
+      - name: Require explicit runner configuration before scheduling Unity
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BUILDS_ENABLED: ${{ vars.SFS_UNITY_BUILDS_ENABLED }}
+        run: |
+          if [ "$BUILDS_ENABLED" != "true" ]; then
+            echo '::error::Configure the licensed sfs-unity Windows runner and sfs-pack-build environment first, then set repository variable SFS_UNITY_BUILDS_ENABLED=true. See docs/PACK_BUILD.md.'
+            exit 1
+          fi
+
+  pack:
+    name: Build and upload four-platform pack
+    needs: checks
+    # Never execute pull-request code on the licensed self-hosted runner.
+    if: github.event_name == 'workflow_dispatch' && vars.SFS_UNITY_BUILDS_ENABLED == 'true'
+    runs-on: [self-hosted, Windows, sfs-unity]
+    environment: sfs-pack-build
+    timeout-minutes: 150
+    steps:
+      - name: Check out selected revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          clean: true
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: '3.12'
+      - name: Build real Unity bundles and package them
+        # SFS_UNITY_EDITOR and SFS_TOOLKIT_PROJECT are machine environment
+        # variables on the runner, not paths/credentials supplied by a PR.
+        run: python scripts/ci/build_pack.py
+      - name: Upload installable pack, checksum, and build provenance
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Electricity-pack-${{ github.sha }}
+          path: artifacts/pack/
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+      - name: Upload Unity diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Electricity-build-logs-${{ github.sha }}
+          path: artifacts/logs/*.log
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Summarize artifact location
+        shell: powershell
+        run: |
+          @'
+          ## SFS Electricity pack
+          Download **Electricity-pack-${{ github.sha }}** from this run's Artifacts section.
+          Extract the download and install the `.pack` file, not the artifact ZIP or its checksum/JSON.
+          Includes Windows, macOS, Android, and iOS payloads. Structural checks passed; in-game testing is still required.
+          '@ | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8

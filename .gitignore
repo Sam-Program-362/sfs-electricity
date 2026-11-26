@@ -1,0 +1,8 @@
+# Generated Unity CI workspace, exports, and diagnostics (never commit Odin/license files).
+.build/
+artifacts/
+.cache/
+
+# Python checks.
+__pycache__/
+*.py[cod]
